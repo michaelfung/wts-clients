@@ -6,11 +6,8 @@
  !!! IMPORTANT NOTE !!!
  You must get a valid Node ID from:
  http://wts.3open.org/getNodeID
- And add it by:
- #define WTS_NODE_ID "PUT_YOUR_NODE_ID_HERE" 
 */
- 
-#define WTS_NODE_ID "TESTABCDEFGH0001"
+#define WTS_NODE_ID "PUT_YOUR_NODE_ID_HERE" 
 
 /*
   Assume these hardware configuration:
@@ -33,15 +30,15 @@
 #define WTS_SERVER_NAME "wts.3open.org"
 #define WTS_SERVER_PORT 9191
 #define WTS_DEFAULT_KEEPALIVE_INTERVAL 120000  // 120 sec in ms
-#define WTS_GET_TS_INTERVAL 1800000 // 1 day in ms: 86400000
-#define WTS_MAX_DATA_COLLECTION_INTERVAL 300000  // 5 min in ms
+#define WTS_GET_TS_INTERVAL 86400000 // 1 day in ms: 86400000
+#define WTS_MIN_DATA_COLLECTION_INTERVAL 300000  // minimum: 300 sec in ms
 
 // user customizable node side error codes, must start from 201:
-#define ERRNO_JSON 201
+#define ERRNO_JSON 210
 #define ERRNO_CMD_MISSING 211
 #define ERRNO_ID_MISSING 212
 #define ERRNO_PAYLOAD_MISSING 213
-#define ERRNO_PAYLOAD_SYNTAX 221
+#define ERRNO_PAYLOAD_SYNTAX 214
 
 // WTS System Wide Constants
 #define WTS_ERRNO_OK 0
@@ -66,8 +63,7 @@ static const unsigned long get_ts_interval = 300000;  // set to WTS_GET_TS_INTER
 unsigned long next_get_ts_millis = 0;  // when should I get ts, in millis
 unsigned long last_keepalive = 0;  //  millis() value of last keepalive rcvd
 unsigned long keepalive_timeout = WTS_DEFAULT_KEEPALIVE_INTERVAL * 2;  // timeout if missed 2 keepalive packets
-static const char production_server[] = WTS_SERVER_NAME;
-static const char dev_server[] = "deb7-vb.example.com";  // special workaround during devel
+static const char server[] = WTS_SERVER_NAME;
 
 // authentication request:
 
@@ -133,17 +129,7 @@ void setup() {
     pinMode(8, OUTPUT);
     pinMode(9, INPUT_PULLUP);
     d9_last_state = HIGH;
-    
-    // special workaround for dev
-    // use wts production server if jumpered LOW
-    pinMode(3, INPUT_PULLUP);  
-    const char *server;    
-    if (digitalRead(3)) {
-      server = dev_server;
-    } else {
-      server = production_server;
-    }
-    
+       
     // start the Ethernet connection:
     state = CONNECT;
 
@@ -355,7 +341,7 @@ void loop() {
     }
     
     // A0 data report, every 5 min
-    if ((millis() - last_report_millis) > WTS_MAX_DATA_COLLECTION_INTERVAL) {  // set to per 10sec for testing
+    if ((millis() - last_report_millis) > WTS_MIN_DATA_COLLECTION_INTERVAL) {  
       last_report_millis = millis();
       int sensorVal = analogRead(0);
       Serial.print("Report A0:");

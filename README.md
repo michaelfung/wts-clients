@@ -1,17 +1,17 @@
 ## Sample clients for the WTS Project ##
 
-### Quick Start ###
+### Quick Start for Arduino ###
 
-#### Arduino client
-
-Get a Node ID for your Arduino at:
+1. Get a Node ID for your Arduino at:
 http://wts.3open.org/tiny/getNodeID
 
-Get the uno client and put your Node ID in the sketch.
+2. Get the Uno client and put your Node ID in the sketch.
 
-Upload the sketch to your device and open the serial console for trouble shooting.
+3. Upload the sketch to your device and open the serial console for trouble shooting.
 
-Remote control your device with **curl** or any http clients of your choice:
+4. Remote control your device with **cURL** or any http clients of your choice.
+
+#### cURL Example:
 
 __Set digital pin 8 HIGH:__
 > $ curl -d "node_id=your_node_id&payload=dw 8 1" http://wts.3open.org/tiny/api/node
@@ -21,6 +21,7 @@ __Set digital pin 8 LOW:__
 
 __Read all sensor values:__
 > $ curl -d "node_id=your_node_id&payload=rs" http://wts.3open.org/tiny/api/node
+
 
 ### Next Step ###
 

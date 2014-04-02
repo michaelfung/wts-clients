@@ -340,6 +340,7 @@ void loop() {
       }
     }
 
+#ifdef ENABLE_DATA_REPORTING
     // A0 data report, every WTS_MIN_DATA_COLLECTION_INTERVAL
     // too frequent report may be regarded as abuse
     if ((millis() - last_report_millis) > WTS_MIN_DATA_COLLECTION_INTERVAL) {
@@ -352,6 +353,7 @@ void loop() {
       client.print(tx_buf);
       free(tx_buf);
     }
+#endif /* ENABLE_DATA_REPORTING */
 
     delay(1);  // for serial console
 }

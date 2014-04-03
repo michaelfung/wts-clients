@@ -13,15 +13,21 @@ http://wts.3open.org/tiny/getNodeID
 
 #### cURL Example:
 
-__Set digital pin 8 HIGH:__
-> $ curl -d "node_id=your_node_id&payload=dw 8 1" http://wts.3open.org/tiny/api/node
+__Set digital pin 4 HIGH:__
+> $ curl -d "node_id=your_node_id&payload=dw 4 1" http://wts.3open.org/tiny/api/node
 
-__Set digital pin 8 LOW:__
-> $ curl -d "node_id=your_node_id&payload=dw 8 0" http://wts.3open.org/tiny/api/node
+__Set digital pin 4 LOW:__
+> $ curl -d "node_id=your_node_id&payload=dw 4 0" http://wts.3open.org/tiny/api/node
 
 __Read all sensor values:__
 > $ curl -d "node_id=your_node_id&payload=rs" http://wts.3open.org/tiny/api/node
 
+
+#### HTML5 and Javascript Example:
+
+<a href="http://wts.3open.org/tinyapi-demo.html" target="_blank">
+    http://wts.3open.org/tinyapi-demo.html
+</a>
 
 ### Next Step ###
 

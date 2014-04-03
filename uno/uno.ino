@@ -11,8 +11,8 @@
 
 /*
   Assume these hardware configuration:
-  Digital Output: D8
-  Digital Input: D9
+  Digital Output: D4
+  Digital Input: D7
   Analog Input: A0
 */
 
@@ -90,7 +90,7 @@ char *reply;  // reply string in json, eg. {"id":"+dwz7Nnhuqh+7P6uX5ibBg","e":"0
 token_list_t *token_list = NULL;
 
 // Hardware:
-int d9_last_state;
+int dsensor_last_state;
 unsigned long last_report_millis;
 
 // Restarts program from beginning but does not reset the peripherals and registers
@@ -126,9 +126,9 @@ void setup() {
     Serial.println("Program start");
 
     // setup HW
-    pinMode(8, OUTPUT);
-    pinMode(9, INPUT_PULLUP);
-    d9_last_state = HIGH;
+    pinMode(4, OUTPUT);
+    pinMode(7, INPUT_PULLUP);
+    dsensor_last_state = HIGH;
 
     // start the Ethernet connection:
     state = CONNECT;
@@ -299,7 +299,7 @@ void loop() {
             }
 
             if (strcmp("dw", command) == 0) {
-              // dw = digital write, e.g. "dw 8 1"
+              // dw = digital write, e.g. "dw 4 1"
 
               // get pin number and val
               int pin = atoi(strtok(NULL, " "));
@@ -311,7 +311,7 @@ void loop() {
             } else if (strcmp("rs", command) == 0) {
               // rs = read sensors values
               tx_buf = (char *)malloc(58);
-              sprintf (tx_buf, "{\"id\":\"%s\",\"e\":%d,\"p\":\"D9,%d,A0,%d\"}\r\n", rid, WTS_ERRNO_OK, digitalRead(9), analogRead(0));
+              sprintf (tx_buf, "{\"id\":\"%s\",\"e\":%d,\"p\":\"D7,%d,A0,%d\"}\r\n", rid, WTS_ERRNO_OK, digitalRead(7), analogRead(0));
               Serial.print("RS:");
               Serial.print(tx_buf);
               client.print(tx_buf);
@@ -326,15 +326,15 @@ void loop() {
     }
 
     /* --- Do HW check --- */
-    // D9 trigger check
-    int d9_state = digitalRead(9);
-    if ( d9_state != d9_last_state) {
-      d9_last_state = d9_state;
-      if (d9_state == LOW) {
-        Serial.println("D9 Triggered");
+    // D7 trigger check
+    int dsensor_state = digitalRead(7);
+    if ( dsensor_state != dsensor_last_state) {
+      dsensor_last_state = dsensor_state;
+      if (dsensor_state == LOW) {
+        Serial.println("D7 Triggered");
         // send notification
         tx_buf = (char *)malloc(40);
-        sprintf (tx_buf, "{\"c\":\"noti\",\"p\":\"%ld D9 %d\"}\r\n", now_ts(), d9_state);
+        sprintf (tx_buf, "{\"c\":\"noti\",\"p\":\"%ld D7 %d\"}\r\n", now_ts(), dsensor_state);
         client.print(tx_buf);
         free(tx_buf);
       }

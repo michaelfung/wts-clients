@@ -8,11 +8,11 @@
 
 ### Sample circuit
 
-![Circuit diagram](https://github.com/michaelfung/wts-clients/raw/master/uno/images/bb.png "Breadboard circuit for WTS sample client")
+![Circuit diagram](https://github.com/michaelfung/wts-clients/raw/master/uno/images/bb_web.png "Breadboard circuit for WTS sample client")
 
 ### Schematic
 
-![Schematic diagram](https://github.com/michaelfung/wts-clients/raw/master/uno/images/schematic.png "Schematic for WTS sample client")
+![Schematic diagram](https://github.com/michaelfung/wts-clients/raw/master/uno/images/schematic_web.png "Schematic for WTS sample client")
 
 
 ### Caution

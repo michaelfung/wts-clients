@@ -7,8 +7,7 @@
  You must get a valid Node ID from:
  http://wts.3open.org/getNodeID
 */
-#define WTS_NODE_ID "QWERTASDFGZXCVBTEST100001"
-#define ENABLE_DATA_PUBLISHING
+#define WTS_NODE_ID "PUT_YOUR_NODE_ID_HERE"
 
 /*
   Assume these hardware configuration:
@@ -64,9 +63,7 @@ static const unsigned long get_ts_interval = WTS_GET_TS_INTERVAL;  // how often 
 unsigned long next_get_ts_millis = 0;  // when should I get ts, in millis
 unsigned long last_keepalive = 0;  //  millis() value of last keepalive rcvd
 unsigned long keepalive_timeout = WTS_DEFAULT_KEEPALIVE_INTERVAL * 2;  // timeout if missed 2 keepalive packets
-//static const char server[] = WTS_SERVER_NAME;
-static const char production_server[] = WTS_SERVER_NAME;
-static const char dev_server[] = "deb7-vb.example.com";  // special workaround during devel
+static const char server[] = WTS_SERVER_NAME;
 
 // authentication request, use either A or B:
 //
@@ -115,9 +112,6 @@ unsigned long now_ts () {
 }
 
 void return_result(unsigned int e) {
-        if (strcmp("pub", json_command) == 0) {
-          return;  // no need to return if it is a pubblished frame
-        }
         // reply command ok or not
         char *buf;
         buf = (char *)malloc(42);
@@ -135,15 +129,6 @@ void setup() {
     pinMode(4, OUTPUT);
     pinMode(7, INPUT_PULLUP);
     dsensor_last_state = HIGH;
-
-    // special workaround for dev
-    // use wts production server if D7 LOW
-    const char *server;
-    if (digitalRead(7)) {
-      server = dev_server;
-    } else {
-      server = production_server;
-    }
 
     // start the Ethernet connection:
     state = CONNECT;
@@ -355,7 +340,7 @@ void loop() {
       }
     }
 
-#ifdef ENABLE_DATA_PUBLISHING
+#ifdef ENABLE_DATA_REPORTING
     // A0 data report, every WTS_MIN_DATA_COLLECTION_INTERVAL
     // too frequent report may be regarded as abuse
     if ((millis() - last_report_millis) > WTS_MIN_DATA_COLLECTION_INTERVAL) {
@@ -364,11 +349,11 @@ void loop() {
       Serial.print("Report A0:");
       Serial.println(sensorVal);
       tx_buf = (char *)malloc(50);
-      sprintf (tx_buf, "{\"c\":\"pub\",\"p\":\"%ld A0 %d\"}\r\n", now_ts(), sensorVal);
+      sprintf (tx_buf, "{\"c\":\"data\",\"p\":\"%ld A0 %d\"}\r\n", now_ts(), sensorVal);
       client.print(tx_buf);
       free(tx_buf);
     }
-#endif /* ENABLE_DATA_PUBLISHING */
+#endif /* ENABLE_DATA_REPORTING */
 
     delay(1);  // for serial console
 }

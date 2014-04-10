@@ -326,7 +326,7 @@ void loop() {
             } else if (strcmp("rs", command) == 0) {
               // rs = read sensors values
               tx_buf = (char *)malloc(58);
-              sprintf (tx_buf, "{\"id\":\"%s\",\"e\":%d,\"p\":\"D7,%d,A0,%d\"}\r\n", rid, WTS_ERRNO_OK, digitalRead(7), analogRead(0));
+              sprintf (tx_buf, "{\"id\":\"%s\",\"e\":%d,\"p\":\"D7:%d;A0:%d\"}\r\n", rid, WTS_ERRNO_OK, digitalRead(7), analogRead(0));
               Serial.print("RS:");
               Serial.print(tx_buf);
               client.print(tx_buf);
@@ -349,7 +349,8 @@ void loop() {
         Serial.println("D7 Triggered");
         // send notification
         tx_buf = (char *)malloc(40);
-        sprintf (tx_buf, "{\"c\":\"noti\",\"p\":\"%ld D7 %d\"}\r\n", now_ts(), dsensor_state);
+        //sprintf (tx_buf, "{\"c\":\"noti\",\"p\":\"%ld D7 %d\"}\r\n", now_ts(), dsensor_state);
+        sprintf (tx_buf, "{\"c\":\"noti\",\"p\":\"D7:%d\"}\r\n", dsensor_state);
         client.print(tx_buf);
         free(tx_buf);
       }
@@ -364,7 +365,8 @@ void loop() {
       Serial.print("Report A0:");
       Serial.println(sensorVal);
       tx_buf = (char *)malloc(50);
-      sprintf (tx_buf, "{\"c\":\"pub\",\"p\":\"%ld A0 %d\"}\r\n", now_ts(), sensorVal);
+      //sprintf (tx_buf, "{\"c\":\"pub\",\"p\":\"%ld A0 %d\"}\r\n", now_ts(), sensorVal);
+      sprintf (tx_buf, "{\"c\":\"pub\",\"p\":\"A0:%d\"}\r\n", sensorVal);
       client.print(tx_buf);
       free(tx_buf);
     }

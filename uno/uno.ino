@@ -88,7 +88,7 @@ char *command;
 char *payload;
 uint8_t command_e = 1;
 char *rid; // request ID, e.g. "+dwz7Nnhuqh+7P6uX5ibBg"
-char *io_port; // pin to read/write
+//char *io_port; // pin to read/write
 char *reply;  // reply string in json, eg. {"id":"+dwz7Nnhuqh+7P6uX5ibBg","e":"0"}
 token_list_t *token_list = NULL;
 
@@ -233,7 +233,7 @@ void loop() {
             if  ((json_errno = json_get_value(token_list, "e")) != NULL) {
               // process TS response
               if (strcmp("ts", json_command) == 0) {
-                Serial.print("do set ts: ");
+                Serial.print("ts=");
                 ts = strtoul(json_get_value(token_list, "ts"), NULL, 10);
                 Serial.println(ts);
                 last_ts_millis = millis();
@@ -241,7 +241,7 @@ void loop() {
               // process AUTH response
               else if (strcmp("auth", json_command) == 0) {
                 if (atoi(json_errno) == 0) {
-                  Serial.println("Auth OK");
+                  Serial.println("AuthOK");
                   state = READY;
                 } else {
                   Serial.println("ERR:AUTH");
@@ -262,13 +262,13 @@ void loop() {
             if (strcmp("config", json_command) == 0) {
               // set keepalive interval ( ki in seconds)
               if (json_get_value(token_list, "ki") != NULL) {
-                Serial.print("do set ki:");
+                Serial.print("ki=");
                 keepalive_timeout = (strtoul(json_get_value(token_list, "ki"), NULL, 10)) * 1000 * 2;
                 Serial.println(keepalive_timeout);
               }
               // set timestamp
               if (json_get_value(token_list, "ts") != NULL) {
-                Serial.print("do set ts:");
+                Serial.print("ts=");
                 ts = strtoul(json_get_value(token_list, "ts"), NULL, 10);
                 last_ts_millis = millis();
                 Serial.println(ts);
@@ -280,7 +280,7 @@ void loop() {
               return;
             }
 
-            /* --- from here on assume json_command is 'payload' --- */
+            /* --- from here on assume json_command is 'req' --- */
 
             // check 'id'
             if ((rid = json_get_value(token_list, "id")) == NULL) {
@@ -315,7 +315,6 @@ void loop() {
 
             if (strcmp("dw", command) == 0) {
               // dw = digital write, e.g. "dw 4 1"
-
               // get pin number and val
               int pin = atoi(strtok(NULL, " "));
               int pinVal = atoi(strtok(NULL, " "));
@@ -340,29 +339,30 @@ void loop() {
         }
     }
 
-    /* --- Do HW check --- */
+    /* --- Do Event check --- */
     // D7 trigger check
     int dsensor_state = digitalRead(7);
     if ( dsensor_state != dsensor_last_state) {
       dsensor_last_state = dsensor_state;
       if (dsensor_state == LOW) {
-        Serial.println("D7 Triggered");
+        Serial.println("Evt:D7");
         // send notification
         tx_buf = (char *)malloc(40);
-        //sprintf (tx_buf, "{\"c\":\"noti\",\"p\":\"%ld D7 %d\"}\r\n", now_ts(), dsensor_state);
-        sprintf (tx_buf, "{\"c\":\"noti\",\"p\":\"D7:%d\"}\r\n", dsensor_state);
+        //sprintf (tx_buf, "{\"c\":\"evt\",\"p\":\"%ld D7 %d\"}\r\n", now_ts(), dsensor_state);
+        sprintf (tx_buf, "{\"c\":\"evt\",\"p\":\"D7:%d\"}\r\n", dsensor_state);
         client.print(tx_buf);
         free(tx_buf);
       }
     }
 
 #ifdef ENABLE_DATA_PUBLISHING
+    /* --- Do Data Publishing --- */
     // A0 data report, every WTS_MIN_DATA_COLLECTION_INTERVAL
     // too frequent report may be regarded as abuse
     if ((millis() - last_report_millis) > WTS_MIN_DATA_COLLECTION_INTERVAL) {
       last_report_millis = millis();
       int sensorVal = analogRead(0);
-      Serial.print("Report A0:");
+      Serial.print("Pub:A0=");
       Serial.println(sensorVal);
       tx_buf = (char *)malloc(50);
       //sprintf (tx_buf, "{\"c\":\"pub\",\"p\":\"%ld A0 %d\"}\r\n", now_ts(), sensorVal);

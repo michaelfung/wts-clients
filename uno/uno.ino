@@ -66,7 +66,7 @@ unsigned long last_keepalive = 0;  //  millis() value of last keepalive rcvd
 unsigned long keepalive_timeout = WTS_DEFAULT_KEEPALIVE_INTERVAL * 2;  // timeout if missed 2 keepalive packets
 //static const char server[] = WTS_SERVER_NAME;
 static const char production_server[] = WTS_SERVER_NAME;
-static const char dev_server[] = "deb7-vb.example.com";  // special workaround during devel
+static const char dev_server[] = "wts-dev.lan";  // special workaround during devel
 
 // authentication request, use either A or B:
 //

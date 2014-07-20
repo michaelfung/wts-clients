@@ -7,8 +7,7 @@
  You must get a valid Node ID from:
  http://wts.3open.org/getNodeID
 */
-#define WTS_NODE_ID "QWERTASDFGZXCVBTEST100001"
-#define ENABLE_DATA_PUBLISHING
+#define WTS_NODE_ID "PUT_YOUR_NODE_ID_HERE"
 
 /*
   Assume these hardware configuration:
@@ -64,9 +63,7 @@ static const unsigned long get_ts_interval = WTS_GET_TS_INTERVAL;  // how often 
 unsigned long next_get_ts_millis = 0;  // when should I get ts, in millis
 unsigned long last_keepalive = 0;  //  millis() value of last keepalive rcvd
 unsigned long keepalive_timeout = WTS_DEFAULT_KEEPALIVE_INTERVAL * 2;  // timeout if missed 2 keepalive packets
-//static const char server[] = WTS_SERVER_NAME;
-static const char production_server[] = WTS_SERVER_NAME;
-static const char dev_server[] = "wts-dev.lan";  // special workaround during devel
+static const char server[] = WTS_SERVER_NAME;
 
 // authentication request, use either A or B:
 //
@@ -88,7 +85,7 @@ char *command;
 char *payload;
 uint8_t command_e = 1;
 char *rid; // request ID, e.g. "+dwz7Nnhuqh+7P6uX5ibBg"
-//char *io_port; // pin to read/write
+char *io_port; // pin to read/write
 char *reply;  // reply string in json, eg. {"id":"+dwz7Nnhuqh+7P6uX5ibBg","e":"0"}
 token_list_t *token_list = NULL;
 
@@ -115,9 +112,6 @@ unsigned long now_ts () {
 }
 
 void return_result(unsigned int e) {
-        if (strcmp("pub", json_command) == 0) {
-          return;  // no need to return if it is a pubblished frame
-        }
         // reply command ok or not
         char *buf;
         buf = (char *)malloc(42);
@@ -135,15 +129,6 @@ void setup() {
     pinMode(4, OUTPUT);
     pinMode(7, INPUT_PULLUP);
     dsensor_last_state = HIGH;
-
-    // special workaround for dev
-    // use wts production server if D7 LOW
-    const char *server;
-    if (digitalRead(7)) {
-      server = dev_server;
-    } else {
-      server = production_server;
-    }
 
     // start the Ethernet connection:
     state = CONNECT;
@@ -233,7 +218,7 @@ void loop() {
             if  ((json_errno = json_get_value(token_list, "e")) != NULL) {
               // process TS response
               if (strcmp("ts", json_command) == 0) {
-                Serial.print("ts=");
+                Serial.print("do set ts: ");
                 ts = strtoul(json_get_value(token_list, "ts"), NULL, 10);
                 Serial.println(ts);
                 last_ts_millis = millis();
@@ -241,7 +226,7 @@ void loop() {
               // process AUTH response
               else if (strcmp("auth", json_command) == 0) {
                 if (atoi(json_errno) == 0) {
-                  Serial.println("AuthOK");
+                  Serial.println("Auth OK");
                   state = READY;
                 } else {
                   Serial.println("ERR:AUTH");
@@ -262,13 +247,13 @@ void loop() {
             if (strcmp("config", json_command) == 0) {
               // set keepalive interval ( ki in seconds)
               if (json_get_value(token_list, "ki") != NULL) {
-                Serial.print("ki=");
+                Serial.print("do set ki:");
                 keepalive_timeout = (strtoul(json_get_value(token_list, "ki"), NULL, 10)) * 1000 * 2;
                 Serial.println(keepalive_timeout);
               }
               // set timestamp
               if (json_get_value(token_list, "ts") != NULL) {
-                Serial.print("ts=");
+                Serial.print("do set ts:");
                 ts = strtoul(json_get_value(token_list, "ts"), NULL, 10);
                 last_ts_millis = millis();
                 Serial.println(ts);
@@ -280,7 +265,7 @@ void loop() {
               return;
             }
 
-            /* --- from here on assume json_command is 'req' --- */
+            /* --- from here on assume json_command is 'payload' --- */
 
             // check 'id'
             if ((rid = json_get_value(token_list, "id")) == NULL) {
@@ -315,6 +300,7 @@ void loop() {
 
             if (strcmp("dw", command) == 0) {
               // dw = digital write, e.g. "dw 4 1"
+
               // get pin number and val
               int pin = atoi(strtok(NULL, " "));
               int pinVal = atoi(strtok(NULL, " "));
@@ -325,7 +311,7 @@ void loop() {
             } else if (strcmp("rs", command) == 0) {
               // rs = read sensors values
               tx_buf = (char *)malloc(58);
-              sprintf (tx_buf, "{\"id\":\"%s\",\"e\":%d,\"p\":\"D7:%d;A0:%d\"}\r\n", rid, WTS_ERRNO_OK, digitalRead(7), analogRead(0));
+              sprintf (tx_buf, "{\"id\":\"%s\",\"e\":%d,\"p\":\"D7,%d,A0,%d\"}\r\n", rid, WTS_ERRNO_OK, digitalRead(7), analogRead(0));
               Serial.print("RS:");
               Serial.print(tx_buf);
               client.print(tx_buf);
@@ -339,38 +325,35 @@ void loop() {
         }
     }
 
-    /* --- Do Event check --- */
+    /* --- Do HW check --- */
     // D7 trigger check
     int dsensor_state = digitalRead(7);
     if ( dsensor_state != dsensor_last_state) {
       dsensor_last_state = dsensor_state;
       if (dsensor_state == LOW) {
-        Serial.println("Evt:D7");
+        Serial.println("D7 Triggered");
         // send notification
         tx_buf = (char *)malloc(40);
-        //sprintf (tx_buf, "{\"c\":\"evt\",\"p\":\"%ld D7 %d\"}\r\n", now_ts(), dsensor_state);
-        sprintf (tx_buf, "{\"c\":\"evt\",\"p\":\"D7:%d\"}\r\n", dsensor_state);
+        sprintf (tx_buf, "{\"c\":\"noti\",\"p\":\"%ld D7 %d\"}\r\n", now_ts(), dsensor_state);
         client.print(tx_buf);
         free(tx_buf);
       }
     }
 
-#ifdef ENABLE_DATA_PUBLISHING
-    /* --- Do Data Publishing --- */
+#ifdef ENABLE_DATA_REPORTING
     // A0 data report, every WTS_MIN_DATA_COLLECTION_INTERVAL
     // too frequent report may be regarded as abuse
     if ((millis() - last_report_millis) > WTS_MIN_DATA_COLLECTION_INTERVAL) {
       last_report_millis = millis();
       int sensorVal = analogRead(0);
-      Serial.print("Pub:A0=");
+      Serial.print("Report A0:");
       Serial.println(sensorVal);
       tx_buf = (char *)malloc(50);
-      //sprintf (tx_buf, "{\"c\":\"pub\",\"p\":\"%ld A0 %d\"}\r\n", now_ts(), sensorVal);
-      sprintf (tx_buf, "{\"c\":\"pub\",\"p\":\"A0:%d\"}\r\n", sensorVal);
+      sprintf (tx_buf, "{\"c\":\"data\",\"p\":\"%ld A0 %d\"}\r\n", now_ts(), sensorVal);
       client.print(tx_buf);
       free(tx_buf);
     }
-#endif /* ENABLE_DATA_PUBLISHING */
+#endif /* ENABLE_DATA_REPORTING */
 
     delay(1);  // for serial console
 }

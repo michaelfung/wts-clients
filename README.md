@@ -20,12 +20,15 @@ NODE_KEY=your_node_key
 ```
 
 __Set digital pin 4 HIGH:__
+
 ``` curl -X POST "${API_BASE}/t1/node/${NODE_ID}" -u "anon:${NODE_KEY}" -d "payload=dw 4 1" ```
 
 __Set digital pin 4 LOW:__
+
 ``` curl -X POST "${API_BASE}/t1/node/${NODE_ID}" -u "anon:${NODE_KEY}" -d "payload=dw 4 0" ```
 
 __Read all sensor values:__
+
 ``` curl -X POST "${API_BASE}/t1/node/${NODE_ID}" -u "anon:${NODE_KEY}" -d "payload=rs" ```
 
 

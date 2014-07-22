@@ -15,5 +15,3 @@
 ![Schematic diagram](https://raw.githubusercontent.com/michaelfung/wts-clients/master/uno/images/schematic_web.png "Schematic for WTS sample client")
 
 
-### Caution
-This client is written by a C/C++ newbie.

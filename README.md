@@ -16,7 +16,7 @@ http://wts.3open.org/get_node_id.html
 ```
 API_BASE=http://wts.3open.org
 NODE_ID=your_node_id
-NODE_KEY=your_node_key
+NODE_KEY=your_node_key # defaults to 'NOKEY'
 ```
 
 __Set digital pin 4 HIGH:__

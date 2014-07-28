@@ -1,5 +1,9 @@
 ## Sample Arduino client
 
+### Software Requirement
+
+You must first install the libraries bundled in this repository before you can compile the client program.
+
 ### Hardware Requirement
 
  - Arduino Uno or better.
@@ -13,5 +17,3 @@
 ### Schematic
 
 ![Schematic diagram](https://raw.githubusercontent.com/michaelfung/wts-clients/master/uno/images/schematic_web.png "Schematic for WTS sample client")
-
-
